@@ -6,27 +6,40 @@
 #include "malloc.c.h"
 void traitant_IT_32(void);
 void ctx_sw(uint32_t *, uint32_t *);
-
+struct processus* actif;
 struct processus* table_proc[2];
 uint32_t pid_courant = 0;
 
+char* mon_nom(void){
+  return actif -> nom;
+}
+
+int32_t mon_pid(void){
+  return actif -> pid;
+}
+
+void ordonnance(void){
+  int32_t pid_actif = mon_pid();
+  struct processus* ancien_actif = actif;
+  ancien_actif -> p_etat = ACTIVABLE;
+  pid_actif = (pid_actif +1) % 2;
+  actif = table_proc[pid_actif];
+  actif -> p_etat = ELU;
+  ctx_sw(ancien_actif -> registres, actif -> registres);
+}
+
 void idle(void){
-  for (int i = 0; i < 3; i++) {
-    printf("[idle] : je tente de passer la main a proc1 ...\n");
-    ctx_sw(table_proc[0] -> registres, table_proc[1] -> registres);
-    printf("[idle] : proc1 m'a redonne la main\n");
+  for (;;) {
+    printf("[%s] pid = %i\n", mon_nom(), mon_pid());
+    ordonnance();
   }
-  printf("[idle] : j'arrete le systeme\n");
-  hlt();
 }
 
 void proc1(void){
 for(;;){
-    printf("[proc1] : je tente de lui redonner la main\n");
-    ctx_sw(table_proc[1] -> registres, table_proc[0] -> registres);
-    printf("[proc1] : idle m'a passe la main\n");
+    printf("[%s] pid = %i\n", mon_nom(), mon_pid());
+    ordonnance();
   }
-
 }
 
 int creer_processus(void (*code)(void), char * nom){
@@ -36,6 +49,7 @@ int creer_processus(void (*code)(void), char * nom){
     strcpy(proc->nom, nom);
     proc -> p_etat = ELU;
     table_proc[0] = proc;
+    actif = proc;
   }
   else {
     proc ->pid = pid_courant;
@@ -49,9 +63,6 @@ int creer_processus(void (*code)(void), char * nom){
   pid_courant ++;
   return pid_courant - 1;
 }
-
-
-
 
 void kernel_start(void)
 {
