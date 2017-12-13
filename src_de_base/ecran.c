@@ -87,6 +87,11 @@ void traite_car(char c){
       col = 0;
       break;
     default:
+      if (col == 0) {
+        for (uint32_t i = 0; i < NB_COL; i++) {
+          ecrit_car( lig, i, ' ', 15, 0);
+        }
+      }
       ecrit_car(lig, col, c, 15, 0);
       if (col == 79) {
         col = col%80;

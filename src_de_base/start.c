@@ -7,8 +7,9 @@
 void traitant_IT_32(void);
 void ctx_sw(uint32_t *, uint32_t *);
 struct processus* actif;
-struct processus* table_proc[2];
+struct processus* table_proc[8];
 uint32_t pid_courant = 0;
+int N = 8;
 
 char* mon_nom(void){
   return actif -> nom;
@@ -22,7 +23,7 @@ void ordonnance(void){
   int32_t pid_actif = mon_pid();
   struct processus* ancien_actif = actif;
   ancien_actif -> p_etat = ACTIVABLE;
-  pid_actif = (pid_actif +1) % 2;
+  pid_actif = (pid_actif +1) % N;
   actif = table_proc[pid_actif];
   actif -> p_etat = ELU;
   ctx_sw(ancien_actif -> registres, actif -> registres);
@@ -41,6 +42,42 @@ for(;;){
     ordonnance();
   }
 }
+void proc2(void){
+for(;;){
+    printf("[%s] pid = %i\n", mon_nom(), mon_pid());
+    ordonnance();
+  }
+}
+void proc3(void){
+for(;;){
+    printf("[%s] pid = %i\n", mon_nom(), mon_pid());
+    ordonnance();
+  }
+}
+void proc4(void){
+for(;;){
+    printf("[%s] pid = %i\n", mon_nom(), mon_pid());
+    ordonnance();
+  }
+}
+void proc5(void){
+for(;;){
+    printf("[%s] pid = %i\n", mon_nom(), mon_pid());
+    ordonnance();
+  }
+}
+void proc6(void){
+for(;;){
+    printf("[%s] pid = %i\n", mon_nom(), mon_pid());
+    ordonnance();
+  }
+}
+void proc7(void){
+for(;;){
+    printf("[%s] pid = %i\n", mon_nom(), mon_pid());
+    ordonnance();
+  }
+}
 
 int creer_processus(void (*code)(void), char * nom){
   struct processus * proc = malloc(sizeof(struct processus));
@@ -51,14 +88,16 @@ int creer_processus(void (*code)(void), char * nom){
     table_proc[0] = proc;
     actif = proc;
   }
+  else if (pid_courant > N) {
+    return -1;
+  }
   else {
     proc ->pid = pid_courant;
     strcpy(proc->nom, nom);
     proc -> p_etat = ACTIVABLE;
-    table_proc[1] = proc;
+    table_proc[pid_courant] = proc;
     proc -> pile_exec[511] = (uint32_t) code;
     proc -> registres[1]= (uint32_t) &(proc->pile_exec[511]);
-    table_proc[1] = proc;
   }
   pid_courant ++;
   return pid_courant - 1;
@@ -73,8 +112,14 @@ void kernel_start(void)
     init_traitant_IT(32, traitant_IT_32);
     // printf("B\n");
     masquage_IRQ(0, false);
-    creer_processus(&idle, "idle");
-    creer_processus(&proc1, "proc1");
+    printf("%i/n",creer_processus(&idle, "idle"));
+    printf("%i/n",creer_processus(&proc1, "proc1"));
+    printf("%i/n",creer_processus(&proc2, "proc2"));
+    printf("%i/n",creer_processus(&proc3, "proc3"));
+    printf("%i/n",creer_processus(&proc4, "proc4"));
+    printf("%i/n",creer_processus(&proc5, "proc5"));
+    printf("%i/n",creer_processus(&proc6, "proc6"));
+    printf("%i/n",creer_processus(&proc7, "proc7"));
     idle();
     // sti();
     // while (1) {
