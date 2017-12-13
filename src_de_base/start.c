@@ -11,14 +11,22 @@ struct processus* table_proc[2];
 uint32_t pid_courant = 0;
 
 void idle(void){
-  printf("[idle] : je tente de passer la main a proc1 ...\n");
-  ctx_sw(table_proc[0] -> registres, table_proc[1] -> registres);
+  for (int i = 0; i < 3; i++) {
+    printf("[idle] : je tente de passer la main a proc1 ...\n");
+    ctx_sw(table_proc[0] -> registres, table_proc[1] -> registres);
+    printf("[idle] : proc1 m'a redonne la main\n");
+  }
+  printf("[idle] : j'arrete le systeme\n");
+  hlt();
 }
 
 void proc1(void){
-  printf("[proc1] : idle m'a passe la main\n");
-  printf("[proc1] : j'arrete le systeme\n");
-  hlt();
+for(;;){
+    printf("[proc1] : je tente de lui redonner la main\n");
+    ctx_sw(table_proc[1] -> registres, table_proc[0] -> registres);
+    printf("[proc1] : idle m'a passe la main\n");
+  }
+
 }
 
 int creer_processus(void (*code)(void), char * nom){
